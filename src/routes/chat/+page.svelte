@@ -37,21 +37,21 @@
 
 	room.onPeerLeave((peerId) => {
 		let leaver = peerList.find((peer) => peer.id === peerId)?.name;
-		messageLog = [...messageLog, `${leaver} has left`];
+		if (leaver !== "") messageLog = [...messageLog, `${leaver} has left`];
 	});
 
 	getProfile((data, peerId) => {
 		let otherProfile = data as PeerProfile;
 		peerList = [...peerList, otherProfile];
 		if (otherProfile.joined > selfProfile.joined) {
-			messageLog = [...messageLog, `${otherProfile.name} has joined`];
+			if (otherProfile.name !== "") messageLog = [...messageLog, `${otherProfile.name} has joined`];
 		}
 	});
 
 	getMessage((data, peerId) => {
 		let recievedMessage = data as string;
 		let sender = peerList.find((peer) => peer.id === peerId)?.name;
-		messageLog = [...messageLog, `${sender}: ${recievedMessage}`];
+		if (sender !== "") messageLog = [...messageLog, `${sender}: ${recievedMessage}`];
 	});
 </script>
 
@@ -71,7 +71,7 @@
 	}}
 	>Leave Room
 </button>
-<span>Connection status: {selfJoined ? 'Connected!' : 'Connecting'}</span>
+<span>{selfJoined ? 'Connected!' : 'Waiting for a peer to join this room...'}</span>
 
 <ul>
 	{#each messageLog as message}
