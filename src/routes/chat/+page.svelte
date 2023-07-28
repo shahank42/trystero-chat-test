@@ -36,45 +36,64 @@
 	});
 
 	room.onPeerLeave((peerId) => {
-		let leaver = peerList.find((peer) => peer.id === peerId)?.name;
-		if (leaver !== "") messageLog = [...messageLog, `${leaver} has left`];
+		let leaver = peerList.find((peer) => peer.id === peerId);
+		messageLog = [...messageLog, `${leaver?.name} has left`];
+		selfJoined = false;
+		peerList = peerList.filter((peer) => peer.id != leaver?.id);
 	});
 
 	getProfile((data, peerId) => {
 		let otherProfile = data as PeerProfile;
 		peerList = [...peerList, otherProfile];
 		if (otherProfile.joined > selfProfile.joined) {
-			if (otherProfile.name !== "") messageLog = [...messageLog, `${otherProfile.name} has joined`];
+			messageLog = [...messageLog, `${otherProfile.name} has joined`];
 		}
 	});
 
 	getMessage((data, peerId) => {
 		let recievedMessage = data as string;
 		let sender = peerList.find((peer) => peer.id === peerId)?.name;
-		if (sender !== "") messageLog = [...messageLog, `${sender}: ${recievedMessage}`];
+		messageLog = [...messageLog, `${sender}: ${recievedMessage}`];
 	});
 </script>
 
-<input type="text" bind:value={rawMessage} />
-<button
-	on:click={() => {
-		sendMessage(rawMessage);
-		messageLog = [...messageLog, `me: ${rawMessage}`];
-    rawMessage = "";
-	}}
-	>Send
-</button>
-<button
-	on:click={() => {
-		room.leave();
-    goto("/");
-	}}
-	>Leave Room
-</button>
-<span>{selfJoined ? 'Connected!' : 'Waiting for a peer to join this room...'}</span>
+<div style="display: flex; width: 100%;">
+	<div style="flex-grow: 1; margin: 5px;">
+		Peers:
+		<ul>
+			{#each peerList as peer}
+				<li>{peer.name}</li>
+			{/each}
+		</ul>
+	</div>
 
-<ul>
-	{#each messageLog as message}
-		<li>{message}</li>
-	{/each}
-</ul>
+	<div style="flex-grow: 1;">
+		<input type="text" bind:value={rawMessage} />
+		<button
+			on:click={() => {
+				sendMessage(rawMessage);
+				messageLog = [...messageLog, `me: ${rawMessage}`];
+				rawMessage = '';
+			}}
+			>Send
+		</button>
+		<button
+			on:click={() => {
+				room.leave();
+				goto('/');
+			}}
+			>Leave Room
+		</button>
+		<span
+			>{selfJoined
+				? `Connected with ${peerList.length} peers!`
+				: 'Waiting for a peer to join this room...'}</span
+		>
+
+		<ul>
+			{#each messageLog as message}
+				<li>{message}</li>
+			{/each}
+		</ul>
+	</div>
+</div>
